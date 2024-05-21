@@ -141,7 +141,13 @@ def train(priordataloader_class, criterion, encoder_generator, emsize=200, nhid=
                     elif isinstance(criterion, (nn.MSELoss, nn.BCEWithLogitsLoss)):
                         losses = criterion(output.flatten(), targets.to(device).flatten())
                     elif isinstance(criterion, nn.CrossEntropyLoss):
-                        losses = criterion(output.reshape(-1, n_out), targets.to(device).long().flatten())
+                        #losses = criterion(output.reshape(-1, n_out), targets.to(device).long().flatten())
+                        if len(torch.unique(targets.to(device))) == 1:
+                            # If there is only one class, assign a dummy label of 0 to all samples
+                            targets = torch.zeros_like(targets, dtype=torch.long, device=device)
+                            losses = criterion(output.reshape(-1, n_out), targets.flatten())
+                        else:
+                            losses = criterion(output.reshape(-1, n_out), targets.to(device).long().flatten())
                     else:
                         losses = criterion(output, targets)
                     losses = losses.view(*output.shape[0:2])

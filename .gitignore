@@ -1,5 +1,8 @@
 # Byte-compiled / optimized / DLL files
-/models_diff
+tabpfn/models_diff/
+tabpfn/results/
+tabpfn/catboost_info/
+
 __pycache__/
 *.py[cod]
 *$py.class
@@ -128,7 +131,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
+.python-version
 # Spyder project settings
 .spyderproject
 .spyproject

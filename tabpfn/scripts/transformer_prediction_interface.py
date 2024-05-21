@@ -198,11 +198,11 @@ class TabPFNClassifier(BaseEstimator, ClassifierMixin):
         y_ = column_or_1d(y, warn=True)
         check_classification_targets(y)
         cls, y = np.unique(y_, return_inverse=True)
-        if len(cls) < 2:
-            raise ValueError(
-                "The number of classes has to be greater than one; got %d class"
-                % len(cls)
-            )
+       # if len(cls) < 2:
+       #     raise ValueError(
+       #         "The number of classes has to be greater than one; got %d class"
+       #         % len(cls)
+       #     )
 
         self.classes_ = cls
 
@@ -242,7 +242,7 @@ class TabPFNClassifier(BaseEstimator, ClassifierMixin):
         # Return the classifier
         return self
 
-    def predict_proba(self, X, normalize_with_test=False, return_logits=False):
+    def predict_proba(self, X, normalize_with_test=False, return_logits=True):
         """
         Predict the probabilities for the input X depending on the training set previously passed in the method fit.
 
@@ -286,16 +286,28 @@ class TabPFNClassifier(BaseEstimator, ClassifierMixin):
                                          no_grad=self.no_grad,
                                          batch_size_inference=self.batch_size_inference,
                                          **get_params_from_config(self.c))
-        prediction_, y_ = prediction.squeeze(0), y_full.squeeze(1).long()[eval_pos:]
+        
+       # prediction_, y_ = prediction.squeeze(0), y_full.squeeze(1).long()[eval_pos:]
+        prediction_ = prediction.squeeze(0)[:, 1]  # Extract the probability of the positive class
+        y_ = y_full.squeeze(1).long()[eval_pos:]
 
-        return prediction_.detach().cpu().numpy() if self.no_grad else prediction_
+       # return prediction_.detach().cpu().numpy() if self.no_grad else prediction_  (changed by Anna here)
 
-    def predict(self, X, return_winning_probability=False, normalize_with_test=False):
+        if self.no_grad:
+            return prediction_[:, 1].detach().cpu().numpy()
+        else:
+            return prediction_[:, 1]
+
+    #def predict(self, X, return_winning_probability=False, normalize_with_test=False):
+    def predict(self, X, normalize_with_test=False):
         p = self.predict_proba(X, normalize_with_test=normalize_with_test)
-        y = np.argmax(p, axis=-1)
-        y = self.classes_.take(np.asarray(y, dtype=np.intp))
-        if return_winning_probability:
-            return y, p.max(axis=-1)
+        y = p
+    
+       # y = (p > 0.5).astype(int)
+        #y = np.argmax(p, axis=-1)
+        #y = self.classes_.take(np.asarray(y, dtype=np.intp))
+        #if return_winning_probability:
+        #    return y, p.max(axis=-1)
         return y
 
 import time
@@ -321,7 +333,7 @@ def transformer_predict(model, eval_xs, eval_ys, eval_position,
                         normalize_with_sqrt=False,
                         seed=0,
                         no_grad=True,
-                        return_logits=False,
+                        return_logits=True,
                         **kwargs):
     """
 
@@ -364,6 +376,8 @@ def transformer_predict(model, eval_xs, eval_ys, eval_position,
             output = output[:, :, 0:num_classes] / torch.exp(softmax_temperature)
             if not return_logits:
                 output = torch.nn.functional.softmax(output, dim=-1)
+            else:
+                output = output[:, :, 1]  # Select the logits of the positive class
             #else:
             #    output[:, :, 1] = model((style.repeat(eval_xs.shape[1], 1) if style is not None else None, eval_xs, eval_ys.float()),
             #               single_eval_pos=eval_position)

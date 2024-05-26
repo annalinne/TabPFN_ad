@@ -26,8 +26,8 @@ from scripts import tabular_metrics
 from notebook_utils import *
 
 large_datasets = True
-max_samples = 1000 if large_datasets else 500 #changed from 10000 and 5000
-bptt = 1000 if large_datasets else 3000#changed from 10000 and 3000
+max_samples = 10000 if large_datasets else 5000
+bptt = 10000 if large_datasets else 3000
 suite='cc'
 
 device = 'cpu'
@@ -47,12 +47,11 @@ def print_models(model_string):
 
 def train_function(config_sample, i, add_name=''):
     start_time = time.time()
-    maximum_runtime = 30 #temp hack
-    N_epochs_to_save = 2
+    N_epochs_to_save = 50
     
     def save_callback(model, epoch):
         if not hasattr(model, 'last_saved_epoch'):
-            model.last_saved_epoch = 1
+            model.last_saved_epoch = 0
         if ((time.time() - start_time) / (maximum_runtime * 60 / N_epochs_to_save)) > model.last_saved_epoch:
             print('Saving model..')
             config_sample['epoch_in_training'] = epoch
@@ -71,7 +70,6 @@ def train_function(config_sample, i, add_name=''):
 
 
 
-
 def reload_config(config_type='causal', task_type='multiclass', longer=0):
     config = get_prior_config(config_type=config_type)
     
@@ -79,7 +77,7 @@ def reload_config(config_type='causal', task_type='multiclass', longer=0):
     
     model_string = ''
     
-    config['epochs'] = 10 #4000
+    config['epochs'] = 12000
     config['recompute_attn'] = True
 
     config['max_num_classes'] = 10
@@ -140,11 +138,11 @@ config['bptt'] = 1024+128
 config['canonical_y_encoder'] = False
 
     
-config['aggregate_k_gradients'] = 8  # changed from 8
-config['batch_size'] = 8*config['aggregate_k_gradients'] #removed 8 multiples
-config['num_steps'] = 1024//config['aggregate_k_gradients'] #changed from 1024
+config['aggregate_k_gradients'] = 8
+config['batch_size'] = 8*config['aggregate_k_gradients']
+config['num_steps'] = 1024//config['aggregate_k_gradients']
 config['epochs'] = 400
-config['total_available_time_in_s'] = 60*60*2 #None #60*60*22 # 22 hours for some safety...
+config['total_available_time_in_s'] = None #60*60*22 # 22 hours for some safety...
 
 config['train_mixed_precision'] = True
 config['efficient_eval_masking'] = True

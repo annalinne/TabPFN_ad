@@ -294,10 +294,15 @@ class TabPFNClassifier(BaseEstimator, ClassifierMixin):
 
        # return prediction_.detach().cpu().numpy() if self.no_grad else prediction_  (changed by Anna here)
 
+       # if self.no_grad:
+       #     return prediction_[:, 1].detach().cpu().numpy()
+       # else:
+       #     return prediction_[:, 1]
+
         if self.no_grad:
-            return prediction_[:, 1].detach().cpu().numpy()
+            return prediction_.detach().cpu().numpy()
         else:
-            return prediction_[:, 1]
+            return prediction_
 
     #def predict(self, X, return_winning_probability=False, normalize_with_test=False):
     def predict(self, X, normalize_with_test=False):

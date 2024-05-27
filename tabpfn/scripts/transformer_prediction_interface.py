@@ -377,7 +377,11 @@ def transformer_predict(model, eval_xs, eval_ys, eval_position,
             if not return_logits:
                 output = torch.nn.functional.softmax(output, dim=-1)
             else:
-                output = output[:, :, 1]  # Select the logits of the positive class
+                #output = output[:, :, 1]  # Select the logits of the positive class
+                if output.shape[2] > 1:
+                    output = output[:, :, 1]  # For binary classification
+                else:
+                    output = torch.sigmoid(output)  # For single class output
             #else:
             #    output[:, :, 1] = model((style.repeat(eval_xs.shape[1], 1) if style is not None else None, eval_xs, eval_ys.float()),
             #               single_eval_pos=eval_position)

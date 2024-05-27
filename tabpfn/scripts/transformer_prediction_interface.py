@@ -288,7 +288,8 @@ class TabPFNClassifier(BaseEstimator, ClassifierMixin):
                                          **get_params_from_config(self.c))
         
        # prediction_, y_ = prediction.squeeze(0), y_full.squeeze(1).long()[eval_pos:]
-        prediction_ = prediction.squeeze(0)[:, 1]  # Extract the probability of the positive class
+        prediction_ = prediction.squeeze(0)[:, 0]  # Extract the probability of the positive class
+       
         y_ = y_full.squeeze(1).long()[eval_pos:]
 
        # return prediction_.detach().cpu().numpy() if self.no_grad else prediction_  (changed by Anna here)

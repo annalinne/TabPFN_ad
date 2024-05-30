@@ -47,6 +47,7 @@ def print_models(model_string):
 
 def train_function(config_sample, i, add_name=''):
     start_time = time.time()
+    maximum_runtime = 30 #temp hack AL
     N_epochs_to_save = 50
     
     def save_callback(model, epoch):

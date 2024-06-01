@@ -47,10 +47,17 @@ def print_models(model_string):
 
 def train_function(config_sample, i, add_name=''):
     start_time = time.time()
-    maximum_runtime = 30 #temp hack AL
+   # maximum_runtime = 30 #temp hack AL
     N_epochs_to_save = 50
     
     def save_callback(model, epoch):
+        if epoch % N_epochs_to_save == 0:
+            print(f'Saving model at epoch {epoch}...')
+            config_sample['epoch_in_training'] = epoch
+            save_model(model, base_path, f'models_diff/prior_diff_real_checkpoint{add_name}_n_{i}_epoch_{epoch}.cpkt',
+                           config_sample)
+
+        '''
         if not hasattr(model, 'last_saved_epoch'):
             model.last_saved_epoch = 0
         if ((time.time() - start_time) / (maximum_runtime * 60 / N_epochs_to_save)) > model.last_saved_epoch:
@@ -59,7 +66,7 @@ def train_function(config_sample, i, add_name=''):
             save_model(model, base_path, f'models_diff/prior_diff_real_checkpoint{add_name}_n_{i}_epoch_{model.last_saved_epoch}.cpkt',
                            config_sample)
             model.last_saved_epoch = model.last_saved_epoch + 1 # TODO: Rename to checkpoint
-    
+         '''
     model = get_model(config_sample
                       , device
                       , should_train=True
@@ -142,7 +149,7 @@ config['canonical_y_encoder'] = False
 config['aggregate_k_gradients'] = 8
 config['batch_size'] = 8*config['aggregate_k_gradients']
 config['num_steps'] = 1024//config['aggregate_k_gradients']
-config['epochs'] = 400
+config['epochs'] = 12000
 config['total_available_time_in_s'] = None #60*60*22 # 22 hours for some safety...
 
 config['train_mixed_precision'] = True
